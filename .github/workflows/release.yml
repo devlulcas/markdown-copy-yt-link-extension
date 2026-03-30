@@ -21,19 +21,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify extension files
-        run: |
-          echo "Extension files:"
-          ls -la
-          echo "Checking for required files:"
-          test -f manifest.json || (echo "manifest.json missing" && exit 1)
-          test -f background.js || (echo "background.js missing" && exit 1)
-          test -f content.js || (echo "content.js missing" && exit 1)
-          test -f options.html || (echo "options.html missing" && exit 1)
-          test -f options.js || (echo "options.js missing" && exit 1)
-          test -d _locales || (echo "_locales directory missing" && exit 1)
-          echo "All required files are present"
-
       - name: Get version
         id: version
         run: |
@@ -45,7 +32,7 @@ jobs:
 
       - name: Create extension zip
         run: |
-          zip -r markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip manifest.json background.js content.js options.html options.js _locales README.md
+          zip -r markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip src
           echo "Extension zip created:"
           ls -la markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip
 
