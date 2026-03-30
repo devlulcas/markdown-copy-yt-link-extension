@@ -19,7 +19,7 @@ Chrome extension for YouTube that helps copy markdown-formatted links quickly.
 3. Enable **Developer mode** (top-right toggle).
 4. Click **Load unpacked**.
 5. Select this project folder:
-   - `markdown-copy-yt-link-extension`
+   - `markdown-copy-yt-link-extension/src`
 6. Confirm the extension appears in your extensions list.
 
 ## Use the Extension
