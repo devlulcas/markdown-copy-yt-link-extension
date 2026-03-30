@@ -1,0 +1,62 @@
+{
+  "extensionName": {
+    "message": "Markdown Copy YT Link"
+  },
+  "extensionDescription": {
+    "message": "Copy a YouTube video link using a configurable markdown template."
+  },
+  "actionTitle": {
+    "message": "Markdown Copy YT Link"
+  },
+  "optionsTitle": {
+    "message": "Markdown Copy YT Link"
+  },
+  "copyMarkdown": {
+    "message": "Copy markdown"
+  },
+  "copyMarkdownAriaLabel": {
+    "message": "Copy markdown"
+  },
+  "configureTheMarkdownTemplate": {
+    "message": "Configure the markdown template used by the YouTube copy button."
+  },
+  "templateLabel": {
+    "message": "Template"
+  },
+  "variablesLine": {
+    "message": "Variables:"
+  },
+  "formattersLine": {
+    "message": "Formatters:"
+  },
+  "datePatternsLine": {
+    "message": "Date patterns for publishedAt:"
+  },
+  "dateExampleLine": {
+    "message": "Example:"
+  },
+  "extraFormattersExampleLine": {
+    "message": "Examples:"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "resetDefault": {
+    "message": "Reset default"
+  },
+  "saved": {
+    "message": "Saved"
+  },
+  "defaultRestored": {
+    "message": "Default restored"
+  },
+  "templateLabelChannel": {
+    "message": "channel"
+  },
+  "templateLabelPublished": {
+    "message": "published"
+  },
+  "templateLabelThumbnail": {
+    "message": "thumbnail"
+  }
+}
