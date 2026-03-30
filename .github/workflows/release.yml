@@ -32,7 +32,9 @@ jobs:
 
       - name: Create extension zip
         run: |
-          zip -j markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip src/*
+          cd src
+          zip -r ../markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip .
+          cd ..
           echo "Extension zip created:"
           ls -la markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip
 
