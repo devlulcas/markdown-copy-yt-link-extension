@@ -1,0 +1,79 @@
+name: Release Extension
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g., v0.0.1)"
+        required: true
+        default: "v0.0.1"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify extension files
+        run: |
+          echo "Extension files:"
+          ls -la
+          echo "Checking for required files:"
+          test -f manifest.json || (echo "manifest.json missing" && exit 1)
+          test -f background.js || (echo "background.js missing" && exit 1)
+          test -f content.js || (echo "content.js missing" && exit 1)
+          test -f options.html || (echo "options.html missing" && exit 1)
+          test -f options.js || (echo "options.js missing" && exit 1)
+          test -d _locales || (echo "_locales directory missing" && exit 1)
+          echo "All required files are present"
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create extension zip
+        run: |
+          zip -r markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip manifest.json background.js content.js options.html options.js _locales README.md
+          echo "Extension zip created:"
+          ls -la markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Markdown Copy YT Link ${{ steps.version.outputs.version }}
+          body: |
+            ## Markdown Copy YT Link ${{ steps.version.outputs.version }}
+
+            Chrome extension for YouTube that copies markdown-formatted links using a configurable template.
+
+            ### Installation
+            1. Download the `markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip` file
+            2. Extract the zip file
+            3. Open Chrome and go to `chrome://extensions/`
+            4. Enable "Developer mode" in the top right
+            5. Click "Load unpacked" and select the extracted folder
+            6. Pin and click the extension icon to copy markdown links on YouTube
+
+            ### How it works
+            The extension runs on `https://www.youtube.com/*`, extracts video metadata, and copies a markdown link based on your saved template.
+
+            ### Changes
+            - See commit history for detailed changes
+          files: markdown-copy-yt-link-extension-${{ steps.version.outputs.version }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
