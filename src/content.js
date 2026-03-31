@@ -8,6 +8,8 @@ const SUCCESS_MS = 1400
 const TARGET_SELECTOR = "#above-the-fold #menu #top-level-buttons-computed"
 const BUTTON_LABEL = getMessage("copyMarkdown", "Copy markdown")
 const BUTTON_ARIA_LABEL = getMessage("copyMarkdownAriaLabel", "Copy markdown")
+const COPY_ICON_PATH = "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"
+const SUCCESS_ICON_PATH = "M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
 
 function getDefaultTemplate() {
   const channelLabel = getMessage("templateLabelChannel", "channel")
@@ -122,7 +124,7 @@ function createStyledButton(container) {
 
   const textContent = document.createElement("div")
   textContent.className = "yt-spec-button-shape-next__button-text-content"
-  textContent.textContent = BUTTON_LABEL
+  setButtonIconContent(textContent, COPY_ICON_PATH, BUTTON_LABEL)
   button.appendChild(textContent)
 
   const touchFeedback = document.createElement("yt-touch-feedback-shape")
@@ -181,6 +183,7 @@ async function onCopyClick(button) {
  */
 function extractVideoData() {
   const normalizedUrl = normalizeWatchUrl(window.location.href)
+
   return {
     title: readMetaTag("meta[property='og:title']") ?? readText("#title h1 yt-formatted-string") ?? document.title.replace(/\s*-\s*YouTube\s*$/i, ""),
     url: normalizedUrl,
@@ -546,24 +549,36 @@ function showSuccess(button) {
     window.clearTimeout(successResetTimeoutId)
   }
 
-  content.innerHTML = `
-    <span aria-hidden="true" style="display:inline-flex;vertical-align:middle;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
-      </svg>
-    </span>
-  `
+  setButtonIconContent(content, SUCCESS_ICON_PATH, BUTTON_LABEL)
 
   successResetTimeoutId = window.setTimeout(() => {
     const activeButton = document.getElementById(BUTTON_ID)
     if (activeButton instanceof HTMLButtonElement) {
       const activeContent = activeButton.querySelector(".yt-spec-button-shape-next__button-text-content")
       if (activeContent instanceof HTMLElement) {
-        activeContent.textContent = BUTTON_LABEL
+        setButtonIconContent(activeContent, COPY_ICON_PATH, BUTTON_LABEL)
       }
     }
     successResetTimeoutId = undefined
   }, SUCCESS_MS)
+}
+
+/**
+ * @param {HTMLElement} content
+ * @param {string} iconPath
+ * @param {string} accessibleText
+ */
+function setButtonIconContent(content, iconPath, accessibleText) {
+  content.innerHTML = `
+    <span aria-hidden="true" style="display:inline-flex;vertical-align:middle;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="${iconPath}"></path>
+      </svg>
+    </span>
+    <span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0;">
+      ${accessibleText}
+    </span>
+  `
 }
 
 init()
