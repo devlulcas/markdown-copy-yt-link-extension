@@ -6,10 +6,41 @@ const BUTTON_ID = "markdown-copy-yt-link-button"
 const TEMPLATE_STORAGE_KEY = "markdownTemplate"
 const SUCCESS_MS = 1400
 const TARGET_SELECTOR = "#above-the-fold #menu #top-level-buttons-computed"
-const BUTTON_LABEL = getMessage("copyMarkdown", "Copy markdown")
+const BUTTON_CONTENT_CLASS = "markdown-copy-yt-link-content"
 const BUTTON_ARIA_LABEL = getMessage("copyMarkdownAriaLabel", "Copy markdown")
 const COPY_ICON_PATH = "M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 18H8V7h11v16z"
 const SUCCESS_ICON_PATH = "M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+const BUTTON_BG_IDLE = "rgba(255,255,255,0.1)"
+const BUTTON_BG_HOVER = "rgba(255,255,255,0.16)"
+const BUTTON_VIEW_MODEL_STYLES = {
+  display: "inline-flex",
+  "align-items": "center",
+}
+const BUTTON_STYLES = {
+  display: "inline-flex",
+  "align-items": "center",
+  "justify-content": "center",
+  gap: "8px",
+  height: "36px",
+  padding: "0 16px",
+  border: "0",
+  "border-radius": "18px",
+  background: BUTTON_BG_IDLE,
+  color: "#f1f1f1",
+  "font-size": "14px",
+  "font-weight": "500",
+  "line-height": "1",
+  cursor: "pointer",
+  "user-select": "none",
+  "white-space": "nowrap",
+  "font-family": "'Roboto', 'Arial', sans-serif",
+  transition: "background-color 150ms ease, opacity 150ms ease",
+}
+const BUTTON_CONTENT_STYLES = {
+  display: "inline-flex",
+  "align-items": "center",
+  gap: "8px",
+}
 
 function getDefaultTemplate() {
   const channelLabel = getMessage("templateLabelChannel", "channel")
@@ -88,7 +119,7 @@ function injectButton() {
     }
   }
 
-  const button = createStyledButton(container)
+  const button = createStyledButton()
   const host = document.createElement("yt-button-view-model")
   host.id = BUTTON_HOST_ID
   host.className = "ytd-menu-renderer"
@@ -103,38 +134,24 @@ function injectButton() {
   }
 }
 
-/**
- * @param {HTMLElement} container
- */
-function createStyledButton(container) {
-  const referenceButton = findReferenceShareButton(container)
+function createStyledButton() {
   const buttonViewModel = document.createElement("button-view-model")
-  buttonViewModel.className = "ytSpecButtonViewModelHost style-scope ytd-menu-renderer"
+  setInlineStyles(buttonViewModel, BUTTON_VIEW_MODEL_STYLES)
 
   const button = document.createElement("button")
   button.id = BUTTON_ID
   button.type = "button"
-  button.ariaLabel = BUTTON_ARIA_LABEL
-  button.ariaDisabled = "false"
-  button.className = referenceButton?.className ??
-    "yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--enable-backdrop-filter-experiment"
-
-  button.classList.remove("yt-spec-button-shape-next--icon-leading")
-  button.title = ""
+  button.setAttribute("aria-label", BUTTON_ARIA_LABEL)
+  button.title = BUTTON_ARIA_LABEL
+  setInlineStyles(button, BUTTON_STYLES)
 
   const textContent = document.createElement("div")
-  textContent.className = "yt-spec-button-shape-next__button-text-content"
-  setButtonIconContent(textContent, COPY_ICON_PATH, BUTTON_LABEL)
+  textContent.className = BUTTON_CONTENT_CLASS
+  setInlineStyles(textContent, BUTTON_CONTENT_STYLES)
+  setButtonIconContent(textContent, COPY_ICON_PATH, BUTTON_ARIA_LABEL)
   button.appendChild(textContent)
 
-  const touchFeedback = document.createElement("yt-touch-feedback-shape")
-  touchFeedback.className = "yt-spec-touch-feedback-shape yt-spec-touch-feedback-shape--touch-response"
-  touchFeedback.setAttribute("aria-hidden", "true")
-  touchFeedback.innerHTML = `
-    <div class="yt-spec-touch-feedback-shape__stroke"></div>
-    <div class="yt-spec-touch-feedback-shape__fill"></div>
-  `
-  button.appendChild(touchFeedback)
+  addButtonInteractionStyles(button)
 
   button.addEventListener("click", () => {
     void onCopyClick(button)
@@ -145,24 +162,35 @@ function createStyledButton(container) {
 }
 
 /**
- * @param {HTMLElement} container
- * @returns {HTMLButtonElement | null}
+ * @param {HTMLElement} element
+ * @param {Record<string, string>} styles
  */
-function findReferenceShareButton(container) {
-  /** @type {HTMLButtonElement[]} */
-  const buttons = Array.from(container.querySelectorAll("button.yt-spec-button-shape-next"))
-  for (const candidate of buttons) {
-    if (candidate.id === BUTTON_ID) {
-      continue
-    }
-
-    const text = candidate.querySelector(".yt-spec-button-shape-next__button-text-content")?.textContent?.trim() ?? ""
-    if (text.length > 0) {
-      return candidate
-    }
+function setInlineStyles(element, styles) {
+  for (const [property, value] of Object.entries(styles)) {
+    element.style.setProperty(property, value)
   }
+}
 
-  return null
+/**
+ * @param {HTMLButtonElement} button
+ */
+function addButtonInteractionStyles(button) {
+  button.addEventListener("mouseenter", () => {
+    button.style.background = BUTTON_BG_HOVER
+  })
+  button.addEventListener("mouseleave", () => {
+    button.style.background = BUTTON_BG_IDLE
+  })
+  button.addEventListener("mousedown", () => {
+    button.style.opacity = "0.85"
+  })
+  button.addEventListener("mouseup", () => {
+    button.style.opacity = "1"
+  })
+  button.addEventListener("blur", () => {
+    button.style.opacity = "1"
+    button.style.background = BUTTON_BG_IDLE
+  })
 }
 
 /**
@@ -540,7 +568,7 @@ function fallbackCopy(text) {
  * @param {HTMLButtonElement} button
  */
 function showSuccess(button) {
-  const content = button.querySelector(".yt-spec-button-shape-next__button-text-content")
+  const content = button.querySelector(`.${BUTTON_CONTENT_CLASS}`)
   if (!(content instanceof HTMLElement)) {
     return
   }
@@ -549,14 +577,14 @@ function showSuccess(button) {
     window.clearTimeout(successResetTimeoutId)
   }
 
-  setButtonIconContent(content, SUCCESS_ICON_PATH, BUTTON_LABEL)
+  setButtonIconContent(content, SUCCESS_ICON_PATH, BUTTON_ARIA_LABEL)
 
   successResetTimeoutId = window.setTimeout(() => {
     const activeButton = document.getElementById(BUTTON_ID)
     if (activeButton instanceof HTMLButtonElement) {
-      const activeContent = activeButton.querySelector(".yt-spec-button-shape-next__button-text-content")
+      const activeContent = activeButton.querySelector(`.${BUTTON_CONTENT_CLASS}`)
       if (activeContent instanceof HTMLElement) {
-        setButtonIconContent(activeContent, COPY_ICON_PATH, BUTTON_LABEL)
+        setButtonIconContent(activeContent, COPY_ICON_PATH, BUTTON_ARIA_LABEL)
       }
     }
     successResetTimeoutId = undefined
@@ -570,13 +598,11 @@ function showSuccess(button) {
  */
 function setButtonIconContent(content, iconPath, accessibleText) {
   content.innerHTML = `
-    <span aria-hidden="true" style="display:inline-flex;vertical-align:middle;">
+    <span aria-hidden="true" style="display:inline-flex;vertical-align:middle;line-height:0;">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <title>${accessibleText}</title>
         <path d="${iconPath}"></path>
       </svg>
-    </span>
-    <span style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0;">
-      ${accessibleText}
     </span>
   `
 }
